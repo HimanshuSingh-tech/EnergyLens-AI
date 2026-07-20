@@ -1,0 +1,43 @@
+# ===============================
+# EnergyLens-AI .gitignore
+# ===============================
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+dist/
+build/
+*.egg
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Raw data (too large for git)
+data/raw/
+
+# Large processed files (tracked by Git LFS)
+# data/processed/master_daily.csv
+# data/processed/master_daily.parquet
+# data/processed/master_features.parquet
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb_checkpoints
+
+# Pytest
+.pytest_cache/

@@ -1,0 +1,32 @@
+# Virtual environment
+.venv/
+venv/
+__pycache__/
+
+# Notebooks (not needed in production)
+notebooks/
+
+# Raw data (only processed data is needed)
+data/raw/
+
+# Large CSV duplicate (parquet is used)
+data/processed/master_daily.csv
+data/processed/master_daily.parquet
+
+# IDE / OS
+.idea/
+.vscode/
+*.pyc
+.DS_Store
+Thumbs.db
+
+# Git
+.git/
+.gitignore
+
+# Assets (development only)
+assets/
+
+# Docs
+README.md
+render.yaml
