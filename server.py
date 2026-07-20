@@ -1,5 +1,6 @@
 import os
 import sys
+import gc
 import joblib
 import pandas as pd
 import numpy as np
@@ -18,10 +19,15 @@ app = FastAPI(
     version="1.0.0"
 )
 
-# Enable CORS for local dev
+# Enable CORS for Vercel frontend + local dev
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=[
+        "https://energy-lens-ai.vercel.app",
+        "http://localhost:8001",
+        "http://127.0.0.1:8001",
+        "*"
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -158,9 +164,12 @@ def get_history(lclid: str):
         if not os.path.exists(FEATURES_PATH):
             raise HTTPException(status_code=500, detail="Feature matrix not found")
         
-        # Read from parquet filtered by LCLid
-        table = pq.read_table(FEATURES_PATH, filters=[('LCLid', '==', lclid)])
+        # Read only needed columns from parquet (memory optimization for free tier)
+        history_columns = ['LCLid', 'day', 'energy_mean', 'temp_avg', 'is_weekend']
+        table = pq.read_table(FEATURES_PATH, columns=history_columns, filters=[('LCLid', '==', lclid)])
         df = table.to_pandas()
+        del table
+        gc.collect()
         
         if df.empty:
             raise HTTPException(status_code=404, detail="No historical records found")
@@ -220,9 +229,12 @@ def post_forecast(req: ForecastRequest):
         # 1. Fetch profile
         profile = loader.profiles_dict[req.lclid]
         
-        # 2. Get recent history from parquet to calculate lags
-        table = pq.read_table(FEATURES_PATH, filters=[('LCLid', '==', req.lclid)])
+        # 2. Get recent history from parquet to calculate lags (minimal columns)
+        forecast_columns = ['LCLid', 'day', 'energy_mean']
+        table = pq.read_table(FEATURES_PATH, columns=forecast_columns, filters=[('LCLid', '==', req.lclid)])
         hist_df = table.to_pandas()
+        del table
+        gc.collect()
         if hist_df.empty:
             raise HTTPException(status_code=404, detail="No historical records found for lag construction")
             
