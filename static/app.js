@@ -1,3 +1,16 @@
+// ============================================================
+// API Configuration
+// In local dev: API_BASE = '' (same origin, FastAPI serves both)
+// In production: Frontend on Vercel → Backend on Render
+// ============================================================
+const API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+    ? ''
+    : 'https://energylens-ai.onrender.com';
+
+function apiUrl(path) {
+    return `${API_BASE}${path}`;
+}
+
 // App State
 let allHouseholds = [];
 let selectedLclid = null;
@@ -96,7 +109,7 @@ function setupWeatherControls() {
 // Load household list from backend
 async function loadHouseholds() {
     try {
-        const res = await fetch('/api/households');
+        const res = await fetch(apiUrl('/api/households'));
         if (!res.ok) throw new Error("Failed to fetch households list");
         const data = await res.json();
         allHouseholds = data.households;
@@ -140,8 +153,8 @@ async function handleHouseholdChange(lclid) {
     
     try {
         const [profileRes, historyRes] = await Promise.all([
-            fetch(`/api/profile/${lclid}`),
-            fetch(`/api/history/${lclid}`)
+            fetch(apiUrl(`/api/profile/${lclid}`)),
+            fetch(apiUrl(`/api/history/${lclid}`))
         ]);
         
         if (!profileRes.ok || !historyRes.ok) throw new Error("Error loading household statistics");
@@ -236,7 +249,7 @@ async function runForecast(lclid) {
     const weatherData = getSimulatedWeather();
     
     try {
-        const res = await fetch('/api/forecast', {
+        const res = await fetch(apiUrl('/api/forecast'), {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
